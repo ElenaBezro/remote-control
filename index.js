@@ -1,9 +1,8 @@
 import { httpServer } from "./src/http_server/index.js";
 import { mouse } from "@nut-tree/nut-js";
-import { createServer } from "http";
+import { createServer } from "node:http";
 import * as WebSocket from "ws";
-import { WebSocketServer } from "ws";
-import { createWebSocketStream } from "ws";
+import { WebSocketServer, createWebSocketStream } from "ws";
 
 const HTTP_PORT = 8181;
 
@@ -24,20 +23,19 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", function connection(ws) {
   // TODO: display webSocket params
   console.log("A new client Connected!");
-  const duplex = createWebSocketStream(ws, { encoding: "utf8" });
-  // duplex.write("Welcome New Client!"); ??
-  ws.send("Welcome New Client!");
+  const duplex = createWebSocketStream(ws, { encoding: "utf8", decodeStrings: false });
+
   duplex.on("data", (command) => {
     console.log("received: %s", command);
     if (command.startsWith("mouse_up")) {
       //TODO: nut-js moves mouse up
       const msgToSendBack = command.split(" ").join("");
-      // duplex.write(msgToSendBack, "utf-8", (err) => {
-      //   if (err) {
-      //     console.log("Oops, something went wrong");
-      //   }
-      console.log(`send: ${command.slice(0, 8)} on${command.slice(8)} px \n`);
-      // });
+      duplex.write(msgToSendBack, (err) => {
+        if (err) {
+          console.log("Oops, something went wrong");
+        }
+        console.log(`send: ${command.slice(0, 8)} on${command.slice(8)} px \n`);
+      });
     }
   });
 });
