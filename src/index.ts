@@ -3,7 +3,7 @@ import { down, left, mouse, right, up } from "@nut-tree/nut-js";
 import { createServer } from "node:http";
 import os from "node:os";
 import { WebSocketServer, createWebSocketStream } from "ws";
-import { drawCircle, drawRectangle } from "./drawing/index";
+import { drawCircle, drawRectangle, getScreenShot } from "./drawing/index";
 
 const HTTP_PORT = 8181;
 
@@ -144,6 +144,18 @@ wss.on("connection", function connection(ws) {
         await drawCircle(radius);
 
         duplex.write(command, (error) => {
+          if (error) {
+            console.error("Oops, something went wrong", error);
+          }
+          console.log(`send: ${command}} \n`);
+        });
+      }
+
+      if (command.startsWith("prnt_scrn")) {
+        const { x, y } = await mouse.getPosition();
+        const screenShot = await getScreenShot(x, y);
+
+        duplex.write(screenShot, (error) => {
           if (error) {
             console.error("Oops, something went wrong", error);
           }
