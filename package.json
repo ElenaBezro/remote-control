@@ -1,22 +1,28 @@
 {
-    "name": "ws_task",
-    "version": "1.0.0",
-    "description": "Template for the WebSocket remote control task",
-    "main": "index.js",
-    "type": "module",
-    "scripts": {
-        "start": "node ./index.js",
-        "start:dev": "nodemon ./index.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "Andrei Auchynnikau",
-    "keywords": [],
-    "license": "ISC",
-    "devDependencies": {
-        "nodemon": "^2.0.16"
-    },
-    "dependencies": {
-        "@nut-tree/nut-js": "^2.3.0",
-        "ws": "^8.8.0"
-    }
+  "name": "ws_task",
+  "version": "1.0.0",
+  "description": "Template for the WebSocket remote control task",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "start:prod": "node ./dist/bundle.js",
+    "start": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Elena Bezrodnova",
+  "keywords": [],
+  "license": "ISC",
+  "devDependencies": {
+    "@types/ws": "^8.5.4",
+    "nodemon": "^2.0.16",
+    "ts-loader": "^9.4.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "@nut-tree/nut-js": "^2.3.0",
+    "jimp": "^0.16.2",
+    "ws": "^8.8.0"
+  }
 }
