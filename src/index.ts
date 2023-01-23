@@ -154,8 +154,9 @@ wss.on("connection", function connection(ws) {
       if (command.startsWith("prnt_scrn")) {
         const { x, y } = await mouse.getPosition();
         const screenShot = await getScreenShot(x, y);
+        const sendBack = `prnt_scrn ${screenShot}`;
 
-        duplex.write(screenShot, (error) => {
+        duplex.write(sendBack, (error) => {
           if (error) {
             console.error("Oops, something went wrong", error);
           }
