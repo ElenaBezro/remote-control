@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   target: "node",
-  entry: "./index.ts",
+  entry: "./src/index.ts",
   mode: "production",
 
   devtool: "inline-source-map",
@@ -16,7 +16,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: [".ts"],
+    extensions: [".ts", ".js"],
   },
   output: {
     filename: "bundle.js",

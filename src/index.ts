@@ -1,8 +1,8 @@
-import { httpServer } from "./src/http_server/index.js";
-import { Button, down, left, mouse, MouseClass, Point, right, up } from "@nut-tree/nut-js";
+import { httpServer } from "./http_server/index";
+import { down, left, mouse, right, up } from "@nut-tree/nut-js";
 import { createServer } from "node:http";
-import * as WebSocket from "ws";
 import { WebSocketServer, createWebSocketStream } from "ws";
+import { drawCircle, drawRectangle } from "./drawing/index";
 
 const HTTP_PORT = 8181;
 
@@ -80,29 +80,24 @@ wss.on("connection", function connection(ws) {
     }
 
     if (command.startsWith("mouse_position")) {
-      let commandText = command.split(" ")[0];
-      const mousePosition = await mouse.getPosition();
-      const msgToSendBack = command + " " + mousePosition.x + "," + mousePosition.y;
+      const { x, y } = await mouse.getPosition();
+      const msgToSendBack = `${command} ${x},${y}`;
+
       duplex.write(msgToSendBack, (err) => {
         if (err) {
           console.error("Oops, something went wrong", err);
           // TODO: return ?
         }
-        console.log(`send: ${command} ${mousePosition.toString()} \n`);
+        console.log(`send: ${msgToSendBack}\n`);
       });
     }
 
     if (command.startsWith("draw_square")) {
       const [commandText, squareSideStr] = command.split(" ");
       const squareSide = +squareSideStr;
-      //console.log(commandText);
       //TODO: read canvas's edge and draw only within the frame
+      await drawRectangle(squareSide, squareSide);
 
-      const { x, y } = await mouse.getPosition();
-      mouse.drag([new Point(x, y), new Point(x + squareSide, y)]);
-      mouse.drag([new Point(x + squareSide, y), new Point(x + squareSide, y + squareSide)]);
-      mouse.drag([new Point(x + squareSide, y + squareSide), new Point(x, y + squareSide)]);
-      mouse.drag([new Point(x, y + squareSide), new Point(x, y)]);
       duplex.write(command, (err) => {
         if (err) {
           console.error("Oops, something went wrong", err);
@@ -112,35 +107,10 @@ wss.on("connection", function connection(ws) {
     }
 
     if (command.startsWith("draw_rectangle")) {
-      let commandText = command.split(" ")[0];
-      const firstSide = +command.split(" ")[1];
-      const secondSide = +command.split(" ")[2];
-      console.log(commandText);
-      //TODO: read canvas's edge and draw only within the frame
-
-      const mousePosition = await mouse.getPosition();
-
-      const { x, y } = mousePosition;
-      const path = [
-        new Point(x, y),
-        new Point(x + firstSide, y),
-        new Point(x + firstSide, y + secondSide),
-        new Point(x, y + secondSide),
-        new Point(x, y),
-      ];
-
-      await mouse.pressButton(Button.LEFT);
-
-      await path.reduce(
-        (mouseMovePromise, point) =>
-          mouseMovePromise.then(async (previousPoint) => {
-            await mouse.drag([previousPoint, point]);
-            return point;
-          }),
-        Promise.resolve<Point>(path[0])
-      );
-      // await mouse.move(path);
-      await mouse.releaseButton(Button.LEFT);
+      const [_commandText, firstSideStr, secondSideStr] = command.split(" ");
+      const firstSide = +firstSideStr;
+      const secondSide = +secondSideStr;
+      await drawRectangle(firstSide, secondSide);
 
       duplex.write(command, (err) => {
         if (err) {
@@ -151,28 +121,9 @@ wss.on("connection", function connection(ws) {
     }
 
     if (command.startsWith("draw_circle")) {
-      let commandText = command.split(" ")[0];
-      const radius = +command.split(" ")[1];
-      //TODO: read canva's edge and draw only within the frame
-
-      const mousePosition = await mouse.getPosition();
-      const xCenter = mousePosition.x - radius;
-      const yCenter = mousePosition.y;
-
-      const path = [...Array(360)].map(
-        (_, deg) =>
-          new Point(
-            xCenter + Math.round(Math.cos((2 * Math.PI * deg) / 360) * radius),
-            yCenter + Math.round(Math.sin((2 * Math.PI * deg) / 360) * radius)
-          )
-      );
-
-      console.log(`mouse (x,y): (${mousePosition.x},${mousePosition.y})`);
-      console.log(path, JSON.stringify(path.map((p) => `[${p.x}, ${p.y}]`)));
-
-      await mouse.pressButton(Button.LEFT);
-      await mouse.move(path);
-      await mouse.releaseButton(Button.LEFT);
+      const [_commandText, radiusStr] = command.split(" ");
+      const radius = +radiusStr;
+      await drawCircle(radius);
 
       duplex.write(command, (error) => {
         if (error) {
