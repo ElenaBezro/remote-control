@@ -1,6 +1,7 @@
 import { httpServer } from "./http_server/index";
 import { down, left, mouse, right, up } from "@nut-tree/nut-js";
 import { createServer } from "node:http";
+import os from "node:os";
 import { WebSocketServer, createWebSocketStream } from "ws";
 import { drawCircle, drawRectangle } from "./drawing/index";
 
@@ -22,11 +23,27 @@ const server = createServer((req, res) => {
 });
 
 const wss = new WebSocketServer({ server });
+const WS_PORT: number = 8080;
+
+const getIPAddress = (): string => {
+  var interfaces = os.networkInterfaces();
+  for (var devName in interfaces) {
+    const iface = interfaces[devName];
+    if (iface) {
+      for (let i = 0; i < iface.length; i++) {
+        const alias = iface[i];
+        if (alias.family === "IPv4" && alias.address !== "127.0.0.1" && !alias.internal) return alias.address;
+      }
+    }
+  }
+  return "0.0.0.0";
+};
 
 wss.on("connection", function connection(ws) {
-  // TODO: display webSocket params
-  console.log("A new client Connected!");
+  console.log(`WS port: ${WS_PORT}`);
+  console.log(`IP-address: ${getIPAddress()}`);
   const duplex = createWebSocketStream(ws, { encoding: "utf8", decodeStrings: false });
+  //TODO: обработка ошибок?
 
   duplex.on("data", async (command: string) => {
     console.log("received: %s", command);
@@ -135,6 +152,12 @@ wss.on("connection", function connection(ws) {
   });
 });
 
-server.listen(8080, () => {
-  console.log("server started on port 8080");
+process.on("SIGINT", () => {
+  wss.close();
+  server.close();
+  httpServer.close();
+});
+
+server.listen(WS_PORT, () => {
+  console.log("WS server started on port 8080");
 });
